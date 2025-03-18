@@ -101,8 +101,8 @@ export default function main(_) {
      */
     (() => {
         window.setInterval( () => {
-            let runDate = _.__tools.getRunDate(_.__config.info.startDate ? _.__config.info.startDate : '2025-03-16');
-            $('#blogRunTimeSpan').text('博客已运行 : '+runDate.daysold+' 天 '+runDate.hrsold+' 时 '+runDate.minsold+' 分 '+runDate.seconds+' 秒');
+            let runDate = _.__tools.getRunDate('2025-3-16');
+            $('#blogRunTimeSpan').text('博客已运行 : '+Math.abs(runDate.daysold)+' 天 '+runDate.hrsold+' 时 '+runDate.minsold+' 分 '+runDate.seconds+' 秒');
         }, 500 );
     })();
 

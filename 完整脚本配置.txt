@@ -1,0 +1,207 @@
+<script type="text/javascript">
+    window.cnblogsConfig = {
+      info: {
+        name: '你听得到', // 您的用户名
+        startDate: '2025-03-16', // 您的入园时间，年-月-日。入园时间查看方法：鼠标停留园龄时间上，会显示入园时间
+        avatar: 'https://images.cnblogs.com/cnblogs_com/blogs/841885/galleries/2449739/o_250317161644_%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20250316021603.jpg', // 头像URL
+        blogIcon: '' // 网站图标
+      },
+      footer: {
+        aplayer: {
+          enable: true,  // 启用音乐播放器
+          options: {
+            id: '9457896792',  // 网易云音乐歌单ID
+            server: 'tencent',  // 音乐服务器
+            type: 'playlist',  // 播放类型
+            fixed: true,  // 固定位置
+            mini: true,  // 迷你模式
+            autoplay: false,  // 自动播放
+            theme: '#2980b9',  // 主题颜色
+            loop: 'all',  // 循环模式
+            order: 'random',  // 播放顺序
+            preload: 'auto',  // 预加载
+            volume: 0.7,  // 音量
+            mutex: true  // 互斥播放
+          }
+        }
+      }
+    }
+</script> 
+<!-- 插件文件引入 -->
+<script src="https://cdn.jsdelivr.net/gh/gning21/blogs2@tags2.1/dist/simpleMemory.js" defer></script>
+
+<!-- 添加自定义CSS -->
+<style>
+  .aplayer.aplayer-fixed {
+    max-width: 300px !important; /* 缩小宽度 */
+    margin: 0 !important;
+    left: auto !important;
+    right: 20px !important;
+    bottom: 10px !important; /* 降低位置到更底部 */
+    position: fixed !important;
+    border-radius: 10px !important;
+    z-index: 999 !important; /* 降低z-index，避免遮挡按钮 */
+    overflow: hidden !important;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1) !important;
+  }
+  
+  .aplayer.aplayer-fixed .aplayer-list {
+    margin-bottom: 20px !important;
+    right: 0 !important;
+    left: auto !important;
+    max-height: 200px !important; /* 缩小高度 */
+    display: none !important; /* 确保列表默认隐藏 */
+  }
+  
+  .aplayer.aplayer-fixed .aplayer-body {
+    border-radius: 10px !important;
+    overflow: hidden !important;
+  }
+  
+  .aplayer.aplayer-fixed .aplayer-miniswitcher {
+    border-radius: 0 10px 10px 0 !important;
+  }
+  
+  .aplayer.aplayer-fixed.aplayer-narrow {
+    right: 20px !important;
+    left: auto !important;
+  }
+  
+  .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+    right: 0 !important;
+    left: auto !important;
+  }
+</style>
+
+<!-- 自定义脚本移动播放器位置 -->
+<script>
+  (function() {
+    // 根据播放器定位尝试次数
+    let attempts = 0;
+    const maxAttempts = 20; // 最大尝试次数
+    
+    // 移动播放器函数
+    function movePlayerToRight(player) {
+      if (!player) return false;
+      
+      try {
+        // 强制修改样式
+        player.style.cssText = `
+          left: auto !important;
+          right: 20px !important;
+          bottom: 10px !important;
+          position: fixed !important;
+          border-radius: 10px !important;
+          z-index: 999 !important;
+          max-width: 300px !important;
+          box-shadow: 0 0 20px rgba(0,0,0,0.1) !important;
+          transform: none !important;
+        `;
+        
+        // 获取子元素
+        const body = player.querySelector('.aplayer-body');
+        const list = player.querySelector('.aplayer-list');
+        const miniSwitch = player.querySelector('.aplayer-miniswitcher');
+        
+        // 修改主体样式
+        if (body) {
+          body.style.cssText = `
+            border-radius: 10px !important;
+            left: auto !important;
+            right: 0 !important;
+          `;
+        }
+        
+        // 修改列表样式
+        if (list) {
+          list.style.cssText = `
+            left: auto !important;
+            right: 0 !important;
+            max-height: 250px !important;
+          `;
+        }
+        
+        // 修改开关样式
+        if (miniSwitch) {
+          miniSwitch.style.cssText = `
+            border-radius: 0 10px 10px 0 !important;
+          `;
+        }
+        
+        console.log('播放器位置已成功调整到右下角');
+        return true;
+      } catch (e) {
+        console.error('调整播放器位置失败:', e);
+        return false;
+      }
+    }
+    
+    // 周期性检查并调整播放器位置
+    function checkAndMovePlayer() {
+      if (attempts >= maxAttempts) return;
+      
+      const player = document.querySelector('.aplayer.aplayer-fixed');
+      if (player) {
+        const success = movePlayerToRight(player);
+        if (!success) {
+          attempts++;
+          setTimeout(checkAndMovePlayer, 1000);
+        }
+      } else {
+        attempts++;
+        setTimeout(checkAndMovePlayer, 1000);
+      }
+    }
+    
+    // 使用MutationObserver监听DOM变化
+    function setupObserver() {
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+            for (let i = 0; i < mutation.addedNodes.length; i++) {
+              const node = mutation.addedNodes[i];
+              if (node.classList && node.classList.contains('aplayer-fixed')) {
+                movePlayerToRight(node);
+              } else if (node.querySelectorAll) {
+                const players = node.querySelectorAll('.aplayer-fixed');
+                players.forEach(movePlayerToRight);
+              }
+            }
+          }
+        });
+      });
+      
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    }
+    
+    // 在DOM加载后执行
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        checkAndMovePlayer();
+        setupObserver();
+      });
+    } else {
+      checkAndMovePlayer();
+      setupObserver();
+    }
+    
+    // 在页面完全加载后再次执行
+    window.addEventListener('load', function() {
+      checkAndMovePlayer();
+    });
+    
+    // 定期执行以确保播放器总是在右侧
+    setInterval(function() {
+      const player = document.querySelector('.aplayer.aplayer-fixed');
+      if (player && player.style.left !== 'auto') {
+        movePlayerToRight(player);
+      }
+    }, 2000);
+  })();
+</script>
+
+<!-- 添加播放器容器 -->
+<div id="player-container"></div>
